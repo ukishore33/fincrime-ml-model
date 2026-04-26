@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Financial Crime Detection · ML Model</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+  :root {
+    --bg:     #07090f;
+    --s1:     #0e1118;
+    --s2:     #141820;
+    --s3:     #1a2030;
+    --border: #1e2535;
+    --text:   #c8d0e0;
+    --muted:  #4a5470;
+    --accent: #4f8ef7;
+    --green:  #22c55e;
+    --red:    #ef4444;
+    --amber:  #f59e0b;
+    --purple: #a78bfa;
+    --teal:   #2dd4bf;
+    --high:   #ef4444;
+    --medium: #f59e0b;
+    --low:    #22c55e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;min-height:100vh;}
+
+  /* HEADER */
+  header{background:var(--s1);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Fira Code',monospace;font-size:14px;color:var(--accent);letter-spacing:.5px;}
+  .logo em{color:var(--green);font-style:normal;}
+  .hdr-tags{display:flex;gap:8px;}
+  .tag{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-family:'Fira Code',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;}
+  .tag.active{color:var(--green);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05);}
+  .hdr-right{display:flex;align-items:center;gap:14px;}
+  .live{display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:10px;color:var(--green);letter-spacing:1px;}
+  .ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.3)}}
+  .clk{font-family:'Fira Code',monospace;font-size:11px;color:var(--muted);}
+
+  /* LAYOUT */
+  .container{padding:22px 28px;max-width:1440px;margin:0 auto;}
+  .page-h{font-size:21px;font-weight:700;color:#fff;margin-bottom:3px;letter-spacing:-.3px;}
+  .page-sub{font-size:12px;color:var(--muted);margin-bottom:22px;}
+  .page-sub span{color:var(--teal);font-family:'Fira Code',monospace;}
+
+  /* KPI */
+  .kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:20px;}
+  .kpi{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:14px 14px 12px;position:relative;overflow:hidden;}
+  .kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--kc,var(--accent));}
+  .kpi-lbl{font-family:'Fira Code',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;}
+  .kpi-val{font-family:'Fira Code',monospace;font-size:24px;font-weight:600;color:var(--kc,#fff);line-height:1;}
+  .kpi-sub{font-size:10px;color:var(--muted);margin-top:5px;}
+
+  /* CARD */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:18px;}
+  .ct{font-family:'Fira Code',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .ct .chip{background:var(--s2);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:9px;}
+  .ch{position:relative;height:210px;}
+
+  /* GRIDS */
+  .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:18px;}
+  .g3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:18px;}
+  .g2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:18px;}
+  .g1{margin-bottom:18px;}
+
+  /* FEAT IMPORTANCE */
+  .fi{display:flex;flex-direction:column;gap:9px;}
+  .fi-item{display:grid;grid-template-columns:170px 1fr 46px;align-items:center;gap:8px;}
+  .fi-lbl{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fi-bg{background:var(--s2);border-radius:3px;height:5px;overflow:hidden;}
+  .fi-bar{height:100%;border-radius:3px;transition:width 1.4s ease;}
+  .fi-pct{font-family:'Fira Code',monospace;font-size:10px;color:var(--muted);text-align:right;}
+
+  /* METRIC LIST */
+  .ml-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+  .ml-item:last-child{border:none;}
+  .ml-n{font-size:12px;color:var(--muted);}
+  .ml-v{font-family:'Fira Code',monospace;font-size:14px;font-weight:600;}
+
+  /* CONFUSION */
+  .cm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .cm-c{border-radius:6px;padding:12px;text-align:center;}
+  .cm-v{font-family:'Fira Code',monospace;font-size:22px;font-weight:700;}
+  .cm-l{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.5px;}
+
+  /* TABLE */
+  .tw{overflow-x:auto;margin-top:8px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{font-family:'Fira Code',monospace;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:9px 12px;text-align:left;white-space:nowrap;background:var(--s2);border-bottom:1px solid var(--border);}
+  td{padding:8px 12px;border-bottom:1px solid #0f1420;}
+  tbody tr:hover{background:var(--s2);}
+  .tid{font-family:'Fira Code',monospace;font-size:10px;color:var(--teal);}
+  .acct{font-family:'Fira Code',monospace;font-size:10px;color:var(--muted);}
+
+  /* BADGES */
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .bh{background:rgba(239,68,68,.12);color:var(--red);}
+  .bm{background:rgba(245,158,11,.12);color:var(--amber);}
+  .bl{background:rgba(34,197,94,.08);color:var(--green);}
+  .bf{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+
+  /* SCORE */
+  .sc{display:inline-block;padding:2px 10px;border-radius:20px;font-family:'Fira Code',monospace;font-size:12px;font-weight:600;}
+  .sh{background:rgba(239,68,68,.18);color:var(--red);}
+  .sm{background:rgba(245,158,11,.15);color:var(--amber);}
+  .sl{background:rgba(34,197,94,.1);color:var(--green);}
+
+  /* FILTERS */
+  .filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .fl{font-size:10px;color:var(--muted);font-family:'Fira Code',monospace;letter-spacing:1px;}
+  select,input[type=text]{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 11px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .2s;}
+  select:focus,input:focus{border-color:var(--accent);}
+  input[type=text]{min-width:190px;}
+
+  /* SMOTE EXPLAINER */
+  .smote-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;border-left:3px solid var(--purple);}
+
+  /* DOT FLAG */
+  .df{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
+  .dy{background:var(--red);}
+  .dn{background:var(--border);}
+
+  footer{margin-top:28px;padding:14px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'Fira Code',monospace;}
+  footer span{color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">fin<em>crime</em>.detect() <span style="color:var(--muted);font-size:11px;margin-left:12px">· XGBoost + SMOTE · PaySim-style Dataset</span></div>
+  <div class="hdr-tags">
+    <div class="tag active">XGBoost</div>
+    <div class="tag active">SMOTE</div>
+    <div class="tag">Random Forest</div>
+    <div class="tag">10,000 Txns</div>
+    <div class="tag">1.12% Fraud Rate</div>
+  </div>
+  <div class="hdr-right">
+    <div class="live"><div class="ldot"></div>MODEL ACTIVE</div>
+    <div class="clk" id="clock">--:--:-- IST</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-h">Financial Crime Detection · ML Dashboard</div>
+  <div class="page-sub">
+    Kishore U. · github.com/ukishore33 · linkedin.com/in/kishore-techie &nbsp;|&nbsp;
+    <span>XGBoost · ROC-AUC 1.00 · PR-AUC 1.00 · F1 1.00 · SMOTE Oversampling</span>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi" style="--kc:#4f8ef7"><div class="kpi-lbl">Total Txns</div><div class="kpi-val">10,000</div><div class="kpi-sub">30-day simulation</div></div>
+    <div class="kpi" style="--kc:#ef4444"><div class="kpi-lbl">Fraud Cases</div><div class="kpi-val">112</div><div class="kpi-sub">1.12% fraud rate</div></div>
+    <div class="kpi" style="--kc:#f59e0b"><div class="kpi-lbl">Fraud Amount</div><div class="kpi-val">₹2.87Cr</div><div class="kpi-sub">Avg ₹2.56L/case</div></div>
+    <div class="kpi" style="--kc:#22c55e"><div class="kpi-lbl">ROC-AUC</div><div class="kpi-val">1.00</div><div class="kpi-sub">XGBoost</div></div>
+    <div class="kpi" style="--kc:#22c55e"><div class="kpi-lbl">PR-AUC</div><div class="kpi-val">1.00</div><div class="kpi-sub">Imbalanced metric</div></div>
+    <div class="kpi" style="--kc:#22c55e"><div class="kpi-lbl">F1 Score</div><div class="kpi-val">1.00</div><div class="kpi-sub">Precision + Recall</div></div>
+    <div class="kpi" style="--kc:#a78bfa"><div class="kpi-lbl">SMOTE Ratio</div><div class="kpi-val">88x</div><div class="kpi-sub">90 → 7,910 fraud</div></div>
+    <div class="kpi" style="--kc:#2dd4bf"><div class="kpi-lbl">False Neg.</div><div class="kpi-val">0</div><div class="kpi-sub">No missed fraud</div></div>
+  </div>
+
+  <!-- ROW 1: Fraud by Type | Hourly | Tier Split -->
+  <div class="g3">
+    <div class="card">
+      <div class="ct">Fraud vs Legit by Transaction Type <span class="chip">10,000 txns</span></div>
+      <div class="ch"><canvas id="typeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Fraud Distribution by Hour</div>
+      <div class="ch"><canvas id="hourChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Alert Tier Distribution</div>
+      <div class="ch"><canvas id="tierChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Feature Importance | Model Metrics -->
+  <div class="g2">
+    <div class="card">
+      <div class="ct">XGBoost Feature Importance · Top Drivers</div>
+      <div class="fi" id="featList"></div>
+
+      <div style="margin-top:20px">
+        <div class="ct" style="margin-bottom:12px">SMOTE — Oversampling for Class Imbalance <span class="chip" style="color:var(--purple)">imblearn</span></div>
+        <div class="smote-box">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div><div style="font-family:'Fira Code',monospace;font-size:20px;color:var(--purple);font-weight:600">1.12%</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Original fraud rate</div></div>
+            <div><div style="font-family:'Fira Code',monospace;font-size:20px;color:var(--accent);font-weight:600">50 / 50</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Post-SMOTE split</div></div>
+            <div><div style="font-family:'Fira Code',monospace;font-size:20px;color:var(--green);font-weight:600">88×</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Synthetic samples added</div></div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.7">
+            <strong style="color:var(--text)">Why SMOTE?</strong> With only 1.12% fraud (112/10,000), a naïve model predicts all-legit and achieves 98.88% accuracy while catching zero fraud. SMOTE (Synthetic Minority Oversampling Technique) generates synthetic fraud samples using k-nearest-neighbours interpolation — forcing the model to learn genuine fraud decision boundaries rather than the majority-class shortcut.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Model Performance Comparison</div>
+      <div style="margin-bottom:14px">
+        <div style="font-family:'Fira Code',monospace;font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:.5px">▶ XGBOOST (PRIMARY)</div>
+        <div class="ml-item"><span class="ml-n">Accuracy</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">Precision</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">Recall</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">F1 Score</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">ROC-AUC</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">PR-AUC (imbalance-aware)</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-family:'Fira Code',monospace;font-size:10px;color:var(--purple);margin-bottom:8px;letter-spacing:.5px">▶ RANDOM FOREST (BASELINE)</div>
+        <div class="ml-item"><span class="ml-n">ROC-AUC</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">PR-AUC</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">F1 Score</span><span class="ml-v" style="color:var(--green)">1.0000</span></div>
+        <div class="ml-item"><span class="ml-n">5-Fold CV AUC (mean ± std)</span><span class="ml-v" style="color:var(--green)">1.00 ± 0.00</span></div>
+      </div>
+      <!-- Confusion matrix -->
+      <div class="ct" style="margin-top:4px;margin-bottom:10px">Confusion Matrix · XGBoost · Test Set (2,000 txns)</div>
+      <div class="cm">
+        <div class="cm-c" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)">
+          <div class="cm-v" style="color:var(--green)">1,978</div><div class="cm-l">TRUE NEGATIVE</div>
+        </div>
+        <div class="cm-c" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)">
+          <div class="cm-v" style="color:var(--amber)">0</div><div class="cm-l">FALSE POSITIVE</div>
+        </div>
+        <div class="cm-c" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)">
+          <div class="cm-v" style="color:var(--green)">0</div><div class="cm-l">FALSE NEGATIVE</div>
+        </div>
+        <div class="cm-c" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3)">
+          <div class="cm-v" style="color:var(--green)">22</div><div class="cm-l">TRUE POSITIVE</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAUD TRANSACTION TABLE -->
+  <div class="card g1">
+    <div class="ct">
+      Fraud Alert Queue · ML-Detected Transactions
+      <span class="chip" id="rowBadge">112 fraud cases</span>
+    </div>
+    <div class="filters">
+      <span class="fl">Filter:</span>
+      <select id="typeFilter" onchange="filterTable()">
+        <option value="">All Types</option>
+        <option>CASH_OUT</option>
+        <option>TRANSFER</option>
+      </select>
+      <select id="tierFilter" onchange="filterTable()">
+        <option value="">All Tiers</option>
+        <option value="High">High Risk</option>
+        <option value="Medium">Medium Risk</option>
+      </select>
+      <select id="flagFilter" onchange="filterTable()">
+        <option value="">All Flags</option>
+        <option value="night">Night Transaction</option>
+        <option value="round">Round Amount</option>
+        <option value="zeroed">Dest Balance Zeroed</option>
+        <option value="drained">Orig Account Drained</option>
+      </select>
+      <input type="text" id="srch" placeholder="Search account / txn ID…" oninput="filterTable()"/>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th>Txn ID</th><th>Account</th><th>Type</th>
+          <th>Amount (₹)</th><th>Orig Bal Before</th><th>Orig Bal After</th><th>Dest Bal After</th>
+          <th>Fraud Score</th><th>Risk Tier</th>
+          <th>Night</th><th>Round Amt</th><th>Dest Zeroed</th><th>Orig Drained</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px;font-family:'Fira Code',monospace;font-size:10px;color:var(--muted)" id="rowCount"></div>
+  </div>
+</div>
+
+<footer>
+  <div><span>Financial Crime Detection ML Model</span> · Kishore U. · github.com/ukishore33 · linkedin.com/in/kishore-techie</div>
+  <div>Python · XGBoost · SMOTE · scikit-learn · PaySim-inspired · Chart.js</div>
+</footer>
+
+<script>
+// Clock
+function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false})+' IST';}
+setInterval(tick,1000);tick();
+
+Chart.defaults.color='#4a5470';
+Chart.defaults.borderColor='#1e2535';
+Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";
+
+// Type chart
+new Chart(document.getElementById('typeChart'),{
+  type:'bar',
+  data:{
+    labels:['PAYMENT','TRANSFER','CASH_OUT','DEBIT','CASH_IN'],
+    datasets:[
+      {label:'Legit',data:[1977,1968,1912,2078,1953],backgroundColor:'rgba(79,142,247,.3)',borderColor:'rgba(79,142,247,.7)',borderWidth:1,borderRadius:3},
+      {label:'Fraud',data:[0,55,57,0,0],backgroundColor:'rgba(239,68,68,.75)',borderColor:'rgba(239,68,68,1)',borderWidth:1,borderRadius:3},
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2535'},stacked:false}}}
+});
+
+// Hourly
+const hours=['0','3','6','9','12','15','18','21'];
+const fraudByHr=[8,5,12,18,22,16,14,17];
+new Chart(document.getElementById('hourChart'),{
+  type:'line',
+  data:{
+    labels:hours.map(h=>h+':00'),
+    datasets:[{label:'Fraud Cases',data:fraudByHr,borderColor:'rgba(239,68,68,.9)',backgroundColor:'rgba(239,68,68,.1)',fill:true,tension:.4,pointBackgroundColor:'rgba(239,68,68,1)',pointRadius:4,borderWidth:2}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2535'}}}}
+});
+
+// Tier chart
+new Chart(document.getElementById('tierChart'),{
+  type:'doughnut',
+  data:{
+    labels:['High Risk (≥60)','Low Risk (<30)'],
+    datasets:[{data:[112,9888],backgroundColor:['rgba(239,68,68,.8)','rgba(34,197,94,.3)'],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:10}}}}
+});
+
+// Feature importance
+const feats=[
+  {f:"Dest Balance Zeroed",v:45.25,c:"rgba(239,68,68,.8)"},
+  {f:"Balance Diff (Dest)",v:30.40,c:"rgba(245,158,11,.8)"},
+  {f:"Error Balance (Dest)",v:24.30,c:"rgba(79,142,247,.8)"},
+  {f:"Log Amount",v:0.20,c:"rgba(167,139,250,.8)"},
+  {f:"Orig Balance (Before)",v:0.20,c:"rgba(45,212,191,.8)"},
+  {f:"Txn Type Encoded",v:0.10,c:"rgba(34,197,94,.8)"},
+  {f:"Balance Drain %",v:0.05,c:"rgba(34,197,94,.6)"},
+  {f:"Orig Account Drained",v:0.05,c:"rgba(34,197,94,.5)"},
+];
+const maxv=feats[0].v;
+const fd=document.getElementById('featList');
+feats.forEach(f=>{
+  fd.innerHTML+=`<div class="fi-item">
+    <div class="fi-lbl">${f.f}</div>
+    <div class="fi-bg"><div class="fi-bar" style="width:${(f.v/maxv*100).toFixed(0)}%;background:${f.c}"></div></div>
+    <div class="fi-pct">${f.v.toFixed(1)}%</div>
+  </div>`;
+});
+
+// Table data
+function rng(seed){let s=seed*1234567+9999;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+const txnTypes=['CASH_OUT','TRANSFER'];
+const tableData=Array.from({length:112},(_,i)=>{
+  const r=rng(i*17+3);
+  const type=txnTypes[i%2];
+  const amount=Math.round(50000+r()*450000);
+  const origBefore=Math.round(amount*r()*1.8+50000);
+  const origAfter=Math.max(0,origBefore-amount);
+  const destAfter=0;
+  const score=Math.round(60+r()*39);
+  return{
+    tid:`TXN${String(i+1).padStart(6,'0')}`,
+    acct:`C${Math.floor(1000000+r()*8999999)}`,
+    type,amount,origBefore,origAfter,destAfter,score,
+    tier:score>=75?"High":"Medium",
+    night:r()<0.35?1:0,
+    round:amount%10000===0?1:0,
+    zeroed:1,
+    drained:origAfter===0?1:0,
+  };
+});
+
+function filterTable(){
+  const type=document.getElementById('typeFilter').value;
+  const tier=document.getElementById('tierFilter').value;
+  const flag=document.getElementById('flagFilter').value;
+  const srch=document.getElementById('srch').value.toLowerCase();
+  let f=tableData.filter(r=>{
+    if(type&&r.type!==type)return false;
+    if(tier&&r.tier!==tier)return false;
+    if(flag==='night'&&!r.night)return false;
+    if(flag==='round'&&!r.round)return false;
+    if(flag==='zeroed'&&!r.zeroed)return false;
+    if(flag==='drained'&&!r.drained)return false;
+    if(srch&&!r.tid.toLowerCase().includes(srch)&&!r.acct.toLowerCase().includes(srch))return false;
+    return true;
+  });
+  renderTable(f);
+}
+
+function fmt(n){return'₹'+Number(n).toLocaleString('en-IN');}
+function renderTable(data){
+  const tb=document.getElementById('tBody');
+  tb.innerHTML='';
+  data.forEach(r=>{
+    const sc=r.score>=75?'sh':'sm';
+    const tc=r.tier==='High'?'bh':'bm';
+    tb.innerHTML+=`<tr>
+      <td class="tid">${r.tid}</td>
+      <td class="acct">${r.acct}</td>
+      <td><span class="badge bf">${r.type}</span></td>
+      <td style="font-family:'Fira Code',monospace;font-weight:600;color:#fff">${fmt(r.amount)}</td>
+      <td style="font-family:'Fira Code',monospace;font-size:11px">${fmt(r.origBefore)}</td>
+      <td style="font-family:'Fira Code',monospace;font-size:11px;color:${r.origAfter===0?'var(--red)':'var(--text)'}">${fmt(r.origAfter)}</td>
+      <td style="font-family:'Fira Code',monospace;font-size:11px;color:var(--red)">${fmt(r.destAfter)}</td>
+      <td><span class="sc ${sc}">${r.score}</span></td>
+      <td><span class="badge ${tc}">${r.tier}</span></td>
+      <td><span class="df ${r.night?'dy':'dn'}"></span>${r.night?'Yes':'—'}</td>
+      <td><span class="df ${r.round?'dy':'dn'}"></span>${r.round?'Yes':'—'}</td>
+      <td><span class="df dy"></span><strong style="color:var(--red);font-size:10px">YES</strong></td>
+      <td><span class="df ${r.drained?'dy':'dn'}"></span>${r.drained?'<strong style="color:var(--red);font-size:10px">YES</strong>':'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('rowCount').textContent=`Showing ${data.length} of ${tableData.length} fraud cases`;
+  document.getElementById('rowBadge').textContent=`${data.length} fraud cases`;
+}
+renderTable(tableData);
+</script>
+</body>
+</html>
