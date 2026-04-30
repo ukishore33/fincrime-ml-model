@@ -1,0 +1,149 @@
+{
+  "metrics": {
+    "xgboost": {
+      "model": "XGBoost",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "confusion_matrix": [
+        [
+          1978,
+          0
+        ],
+        [
+          0,
+          22
+        ]
+      ]
+    },
+    "random_forest": {
+      "model": "Random Forest",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "confusion_matrix": [
+        [
+          1978,
+          0
+        ],
+        [
+          0,
+          22
+        ]
+      ],
+      "cv_auc_mean": 1.0,
+      "cv_auc_std": 0.0
+    }
+  },
+  "feature_importance": [
+    {
+      "feature": "balance_diff_dest",
+      "importance": 0.3606
+    },
+    {
+      "feature": "error_balance_dest",
+      "importance": 0.3378
+    },
+    {
+      "feature": "dest_balance_zeroed",
+      "importance": 0.3006
+    },
+    {
+      "feature": "new_balance_dest",
+      "importance": 0.0004
+    },
+    {
+      "feature": "log_amount",
+      "importance": 0.0004
+    },
+    {
+      "feature": "balance_diff_orig",
+      "importance": 0.0001
+    },
+    {
+      "feature": "txn_type_enc",
+      "importance": 0.0
+    },
+    {
+      "feature": "log_old_bal_orig",
+      "importance": 0.0
+    },
+    {
+      "feature": "old_balance_orig",
+      "importance": 0.0
+    },
+    {
+      "feature": "new_balance_orig",
+      "importance": 0.0
+    },
+    {
+      "feature": "old_balance_dest",
+      "importance": 0.0
+    },
+    {
+      "feature": "amount_to_balance_ratio",
+      "importance": 0.0
+    },
+    {
+      "feature": "night_txn_flag",
+      "importance": 0.0
+    },
+    {
+      "feature": "weekend_flag",
+      "importance": 0.0
+    },
+    {
+      "feature": "round_amount_flag",
+      "importance": 0.0
+    },
+    {
+      "feature": "error_balance_orig",
+      "importance": 0.0
+    },
+    {
+      "feature": "surp_orig_zeroed",
+      "importance": 0.0
+    },
+    {
+      "feature": "high_amount_flag",
+      "importance": 0.0
+    },
+    {
+      "feature": "balance_drain_pct",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_transfer_cashout",
+      "importance": 0.0
+    }
+  ],
+  "roc_data": [
+    {
+      "fpr": 0.0,
+      "tpr": 0.0
+    }
+  ],
+  "summary": {
+    "total_transactions": 10000,
+    "total_fraud": 112,
+    "fraud_rate_pct": 1.12,
+    "ml_alerts": 112,
+    "fraud_by_type": {
+      "CASH_IN": 0,
+      "CASH_OUT": 57,
+      "DEBIT": 0,
+      "PAYMENT": 0,
+      "TRANSFER": 55
+    },
+    "fraud_amt_total": 28722704.89,
+    "avg_fraud_amount": 256452.72,
+    "avg_legit_amount": 15448.0
+  },
+  "primary_model": "xgboost"
+}
