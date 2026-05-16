@@ -143,7 +143,7 @@ python generate_data.py
 python train_model.py
 open fincrime_dashboard.html
 ```
-
+##### [Live Demo](https://ukishore33.github.io/fincrime-ml-model/fincrime_dashboard.html)
 ---
 
 ## 👤 Author
